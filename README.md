@@ -1,8 +1,3 @@
-Below is a complete `README.md` file with the updated sections, including the overview, project structure, a corrected Mermaid flow diagram, installation and usage instructions, and guidance for using a `.env` file to store Snowflake credentials.
-
----
-
-```markdown
 # Coinbase-to-Snowflake-Django-Streamlit Project
 
 ## Overview
