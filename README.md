@@ -39,36 +39,48 @@ coinbaseapi/
 
 ## Flow Diagram
 
-Below is a Mermaid flow diagram that illustrates the overall project flow:
+The following diagram illustrates the complete data flow—from fetching data from the Coinbase API to loading it into Snowflake, exposing it via a Django REST API with multiple authentication levels (including a custom login endpoint), and finally visualizing it using separate Streamlit applications.
 
 ```mermaid
 flowchart TD
-    A[Coinbase API Data Source]
-    B[Data Ingestion Script]
-    C[CSV File]
-    D[Snowflake: CURRENCIES Table]
-    E[Django REST API]
-    F[Login Endpoint<br/>(/api/login/)]
-    G[Level 1 Endpoint<br/>(/api/level1/currencies/)]
-    H[Level 2 Endpoint<br/>(/api/level2/currencies/)]
-    I[Level 3 Endpoint<br/>(/api/level3/currencies/)]
-    J[Streamlit App Level 1]
-    K[Streamlit App Level 2]
-    L[Streamlit App Level 3]
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-    E --> G
-    E --> H
-    E --> I
-    G --> J
-    H --> K
-    I --> L
+    A[Coinbase API Data Source] --> B[Data Ingestion Script]
+    B --> C[CSV File]
+    C --> D[Snowflake: CURRENCIES Table]
+    D --> E[Django REST API]
+    E --> F[Login Endpoint<br/>(/api/login/)]
+    E --> G[Level 1 Endpoint<br/>(/api/level1/currencies/)]
+    E --> H[Level 2 Endpoint<br/>(/api/level2/currencies/)]
+    E --> I[Level 3 Endpoint<br/>(/api/level3/currencies/)]
+    G --> J[Streamlit App - Level 1 Visualization]
+    H --> K[Streamlit App - Level 2 Visualization]
+    I --> L[Streamlit App - Level 3 Visualization]
 ```
 
+**Diagram Explanation:**
+
+1. **Coinbase API Data Source:**  
+   The process begins by fetching data from the Coinbase currencies API.
+
+2. **Data Ingestion Script:**  
+   The ingestion script retrieves the JSON data, converts it to a CSV file (ensuring all keys appear as columns), and drops/recreates the Snowflake table.
+
+3. **Snowflake – CURRENCIES Table:**  
+   The CSV data is loaded into the `CURRENCIES` table in Snowflake.
+
+4. **Django REST API:**  
+   The Django API connects to Snowflake and exposes the data via several endpoints:
+   - **Login Endpoint:** Allows users to log in (and obtain a session cookie).
+   - **Level 1 Endpoint:** Public endpoint returning minimal data.
+   - **Level 2 Endpoint:** Authenticated endpoint returning a moderate subset of data.
+   - **Level 3 Endpoint:** Admin-only endpoint returning the full dataset.
+
+5. **Streamlit Visualization Apps:**  
+   Separate Streamlit applications are provided for each level:
+   - **Level 1 Visualization:** Displays public data.
+   - **Level 2 Visualization:** Requires login and displays authenticated data.
+   - **Level 3 Visualization:** Requires admin credentials and displays full details.
+
+---
 *How It Works:*  
 1. The **Data Ingestion Script** (`ingest_to_snowflake_csv.py`) fetches JSON data from Coinbase, converts it to CSV (ensuring all keys appear as columns), drops any existing **CURRENCIES** table, creates a new one, and loads the CSV data into Snowflake.  
 2. The **Django REST API** queries Snowflake and exposes endpoints:  
