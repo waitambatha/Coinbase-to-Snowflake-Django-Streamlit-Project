@@ -1,3 +1,4 @@
+Below is an example of a complete `README.md` file with all the updated sections, including the flow diagram (using Mermaid syntax without HTML tags), instructions for using a `.env` file (and ignoring it in Git), installation details, and instructions for installing SnowSQL on Garuda Linux.
 
 ---
 
@@ -175,6 +176,8 @@ Open separate terminal windows or tabs and run the following commands:
 
 
 
+---
+
 ## Usage and Workflow
 
 1. **Data Ingestion:**  
@@ -208,7 +211,9 @@ Open separate terminal windows or tabs and run the following commands:
 
 ---
 
-Happy coding!
+
 ```
 
 ---
+
+You can save this content as your `README.md` file in the project root. This file now includes all updated instructions, a corrected Mermaid flow diagram, details on environment configuration, and SnowSQL installation instructions for Garuda Linux.
