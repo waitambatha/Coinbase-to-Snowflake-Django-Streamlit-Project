@@ -1,4 +1,6 @@
+Coinbase-to-Snowflake-Django-Streamlit Project
 
+---
 
 ```markdown
 # Coinbase-to-Snowflake-Django-Streamlit Project
@@ -173,7 +175,6 @@ Open separate terminal windows or tabs and run the following commands:
   ```
 
 
----
 
 ## Usage and Workflow
 
@@ -208,5 +209,7 @@ Open separate terminal windows or tabs and run the following commands:
 
 ---
 
-
+Happy coding!
 ```
+
+---
