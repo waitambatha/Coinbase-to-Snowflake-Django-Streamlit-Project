@@ -1,6 +1,3 @@
-Below is an example of a complete `README.md` file with all the updated sections, including the flow diagram (using Mermaid syntax without HTML tags), instructions for using a `.env` file (and ignoring it in Git), installation details, and instructions for installing SnowSQL on Garuda Linux.
-
----
 
 ```markdown
 # Coinbase-to-Snowflake-Django-Streamlit Project
