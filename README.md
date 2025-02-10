@@ -1,20 +1,15 @@
+---
 
+```markdown
 # Coinbase-to-Snowflake-Django-Streamlit Project
 
 ## Overview
 
-This project ingests cryptocurrency data from Coinbase’s currencies API, loads it into a Snowflake database, exposes the data via a Django REST API with three authorization levels, and visualizes the data through separate Streamlit applications. The three authorization levels are defined as follows:
+This project ingests cryptocurrency data from Coinbase’s currencies API, loads it into a Snowflake database, exposes the data via a Django REST API with three authorization levels, and visualizes the data using separate Streamlit applications. A custom login API endpoint is provided so that users can log in via session-based authentication. The three authorization levels are:
 
-- **Level 1 (Public):**  
-  Minimal data (e.g. ID, status). No authentication required.
-
-- **Level 2 (Authenticated):**  
-  A moderate subset of fields (e.g. ID, name, min_size, status, default_network, display_name). Accessible after login via the custom login API endpoint.
-
-- **Level 3 (Admin):**  
-  All available data fields. Accessible only for admin users (those with `is_staff` or `is_superuser` set to True).
-
-The project also includes a custom login API endpoint that allows users to log in using session-based authentication so that the Streamlit apps can simulate a login and then access protected endpoints.
+- **Level 1 (Public):** Minimal data (e.g. ID, status). No authentication required.
+- **Level 2 (Authenticated):** A moderate subset of fields (e.g. ID, name, min_size, status, default_network, display_name). Requires login.
+- **Level 3 (Admin):** All available fields. Accessible only to admin users (users with `is_staff` or `is_superuser` set to true).
 
 ---
 
@@ -22,24 +17,25 @@ The project also includes a custom login API endpoint that allows users to log i
 
 ```
 coinbaseapi/
-├── api/
+├── .env                     # Environment variables file (contains sensitive info)
+├── .gitignore               # Git ignore file (includes .env)
+├── ingest_to_snowflake_csv.py   # Script to ingest data: fetch JSON, convert to CSV, load into Snowflake
+├── manage.py                # Django project management file
+├── api/                     # Django app with API views and URL configuration
 │   ├── __init__.py
-│   ├── urls.py              # API URL configuration (includes endpoints for login, level1, level2, level3)
-│   └── views.py             # Django API views for login and data endpoints
-├── ingest_to_snowflake_csv.py  # Script to fetch Coinbase API data, convert it to CSV, and load it into Snowflake
-├── README.md              # This file
-├── manage.py              # Django project management file
-├── requirements.txt       # Python package dependencies
-├── streamlit_level1.py    # Streamlit app for Level 1 visualization (public)
-├── streamlit_level2.py    # Streamlit app for Level 2 visualization (authenticated user)
-└── streamlit_level3.py    # Streamlit app for Level 3 visualization (admin)
+│   ├── urls.py              # API endpoints: login, level1, level2, level3
+│   └── views.py             # API views implementation (including custom login)
+├── requirements.txt         # Python package dependencies
+├── streamlit_level1.py      # Streamlit app for Level 1 (public) visualization
+├── streamlit_level2.py      # Streamlit app for Level 2 (authenticated) visualization
+└── streamlit_level3.py      # Streamlit app for Level 3 (admin) visualization
 ```
 
 ---
 
 ## Flow Diagram
 
-The following diagram illustrates the complete data flow—from fetching data from the Coinbase API to loading it into Snowflake, exposing it via a Django REST API with multiple authentication levels (including a custom login endpoint), and finally visualizing it using separate Streamlit applications.
+Below is a Mermaid diagram that illustrates the overall data flow. (If your GitHub README does not render Mermaid, use an online Mermaid Live Editor to generate an image.)
 
 ```mermaid
 flowchart TD
@@ -47,48 +43,27 @@ flowchart TD
     B --> C[CSV File]
     C --> D[Snowflake: CURRENCIES Table]
     D --> E[Django REST API]
-    E --> F[Login Endpoint<br/>(/api/login/)]
-    E --> G[Level 1 Endpoint<br/>(/api/level1/currencies/)]
-    E --> H[Level 2 Endpoint<br/>(/api/level2/currencies/)]
-    E --> I[Level 3 Endpoint<br/>(/api/level3/currencies/)]
-    G --> J[Streamlit App - Level 1 Visualization]
-    H --> K[Streamlit App - Level 2 Visualization]
-    I --> L[Streamlit App - Level 3 Visualization]
+    E --> F["Login Endpoint (/api/login/)"]
+    E --> G["Level 1 Endpoint (/api/level1/currencies/)"]
+    E --> H["Level 2 Endpoint (/api/level2/currencies/)"]
+    E --> I["Level 3 Endpoint (/api/level3/currencies/)"]
+    G --> J["Streamlit App - Level 1 Visualization"]
+    H --> K["Streamlit App - Level 2 Visualization"]
+    I --> L["Streamlit App - Level 3 Visualization"]
 ```
 
 **Diagram Explanation:**
 
-1. **Coinbase API Data Source:**  
-   The process begins by fetching data from the Coinbase currencies API.
-
-2. **Data Ingestion Script:**  
-   The ingestion script retrieves the JSON data, converts it to a CSV file (ensuring all keys appear as columns), and drops/recreates the Snowflake table.
-
-3. **Snowflake – CURRENCIES Table:**  
-   The CSV data is loaded into the `CURRENCIES` table in Snowflake.
-
-4. **Django REST API:**  
-   The Django API connects to Snowflake and exposes the data via several endpoints:
-   - **Login Endpoint:** Allows users to log in (and obtain a session cookie).
-   - **Level 1 Endpoint:** Public endpoint returning minimal data.
-   - **Level 2 Endpoint:** Authenticated endpoint returning a moderate subset of data.
-   - **Level 3 Endpoint:** Admin-only endpoint returning the full dataset.
-
-5. **Streamlit Visualization Apps:**  
-   Separate Streamlit applications are provided for each level:
-   - **Level 1 Visualization:** Displays public data.
-   - **Level 2 Visualization:** Requires login and displays authenticated data.
-   - **Level 3 Visualization:** Requires admin credentials and displays full details.
-
----
-*How It Works:*  
-1. The **Data Ingestion Script** (`ingest_to_snowflake_csv.py`) fetches JSON data from Coinbase, converts it to CSV (ensuring all keys appear as columns), drops any existing **CURRENCIES** table, creates a new one, and loads the CSV data into Snowflake.  
-2. The **Django REST API** queries Snowflake and exposes endpoints:  
-   - **Level 1:** Returns minimal fields.  
-   - **Level 2:** Returns a moderate subset (requires login).  
-   - **Level 3:** Returns all data (admin-only).  
-3. The **Custom Login API Endpoint** (`/api/login/`) allows users to log in (and obtain a session cookie).  
-4. The **Streamlit apps** use session-based login (or token-based authentication) to fetch and visualize the data at their respective levels.
+1. **Coinbase API Data Source:** Data is fetched from Coinbase’s currencies API.
+2. **Data Ingestion Script:** Retrieves JSON data, converts it into a CSV file.
+3. **CSV File:** Contains all the keys as columns.
+4. **Snowflake: CURRENCIES Table:** The CSV file is loaded into this table (the table is dropped and recreated with each ingestion).
+5. **Django REST API:** Connects to Snowflake and exposes multiple endpoints:
+   - **Login Endpoint:** Allows users to log in and obtain a session.
+   - **Level 1 Endpoint:** Public data.
+   - **Level 2 Endpoint:** Authenticated data.
+   - **Level 3 Endpoint:** Admin-only data.
+6. **Streamlit Visualization Apps:** Separate apps visualize data for each level.
 
 ---
 
@@ -96,15 +71,17 @@ flowchart TD
 
 ### Prerequisites
 
-- **Python 3.8+** (with `pip`)  
-- **Django** and **Django REST Framework**  
-- **Streamlit**  
-- **Snowflake Connector for Python**  
-- A **Snowflake Account**  
-- **SnowSQL** (for command‑line interactions with Snowflake; see installation instructions below)  
-- An Arch-based Linux distribution (e.g., Garuda Linux) for SnowSQL installation
+- **Python 3.8+** with `pip`
+- **Django** and **Django REST Framework**
+- **Streamlit**
+- **Snowflake Connector for Python**
+- A **Snowflake Account**
+- **SnowSQL** (optional, see installation instructions below)
+- Garuda Linux (or another Arch-based distro)
 
 ### 1. Clone the Repository and Install Dependencies
+
+Clone the repository and install the required packages:
 
 ```bash
 git clone https://github.com/yourusername/coinbaseapi.git
@@ -112,45 +89,70 @@ cd coinbaseapi
 pip install -r requirements.txt
 ```
 
-*Example `requirements.txt` might include:*
+*Example `requirements.txt`:*
 ```
 Django>=3.2
 djangorestframework
 requests
 snowflake-connector-python
 streamlit
+python-dotenv
 ```
 
-### 2. Configure Your Django Project
+### 2. Configure Environment Variables
 
-- Update your Django settings with your Snowflake credentials.
-- Make sure the apps `api` and `rest_framework` (plus `rest_framework.authtoken` if using token auth) are added to `INSTALLED_APPS`.
+Create a `.env` file in the root of your project (next to `manage.py`) with your Snowflake credentials and any other sensitive settings:
+
+```ini
+# .env
+SNOWFLAKE_USER=your_snowflake_user
+SNOWFLAKE_PASSWORD=your_snowflake_password
+SNOWFLAKE_ACCOUNT=your_snowflake_account
+SNOWFLAKE_WAREHOUSE=your_snowflake_warehouse
+SNOWFLAKE_DATABASE=your_snowflake_database
+SNOWFLAKE_SCHEMA=your_snowflake_schema
+```
+
+**Important:**  
+Add the `.env` file to your `.gitignore` file to ensure it is not committed to GitHub. Your `.gitignore` should include:
+
+```gitignore
+.env
+```
+
+If you have already committed it, remove it from tracking with:
+
+```bash
+git rm --cached .env
+git commit -m "Remove .env from version control"
+```
 
 ### 3. Load Data into Snowflake
 
-Run the ingestion script to fetch data from Coinbase, convert it to CSV, drop/recreate the table, and load data:
+Run the ingestion script to fetch data from Coinbase, convert it to a CSV file, drop and recreate the table in Snowflake, and load the data:
 
 ```bash
 python ingest_to_snowflake_csv.py
 ```
 
-### 4. Run the Django Server
+### 4. Configure and Run the Django Server
 
-Start the Django development server:
+Ensure your Django settings are properly configured (e.g., add `api` and `rest_framework` to `INSTALLED_APPS`). Then, start the Django development server:
 
 ```bash
 python manage.py runserver
 ```
 
-Your API endpoints will be available at:  
-- Public: [http://127.0.0.1:8000/api/level1/currencies/](http://127.0.0.1:8000/api/level1/currencies/)  
-- Login: [http://127.0.0.1:8000/api/login/](http://127.0.0.1:8000/api/login/)  
-- Level 2: [http://127.0.0.1:8000/api/level2/currencies/](http://127.0.0.1:8000/api/level2/currencies/)  
-- Level 3: [http://127.0.0.1:8000/api/level3/currencies/](http://127.0.0.1:8000/api/level3/currencies/)
+Your API endpoints will be available at:
+
+- Public Data (Level 1): `http://127.0.0.1:8000/api/level1/currencies/`
+- Login: `http://127.0.0.1:8000/api/login/`
+- Authenticated Data (Level 2): `http://127.0.0.1:8000/api/level2/currencies/`
+- Admin Data (Level 3): `http://127.0.0.1:8000/api/level3/currencies/`
 
 ### 5. Run the Streamlit Applications
 
-Open three separate terminals (or tabs) and run:
+Open separate terminal windows or tabs and run the following commands:
 
 - **Level 1 (Public):**
 
@@ -170,21 +172,41 @@ Open three separate terminals (or tabs) and run:
   streamlit run streamlit_level3.py --server.port 8503
   ```
 
+
 ---
 
-## Installing SnowSQL on Garuda Linux
+## Usage and Workflow
 
-Garuda Linux is an Arch-based distribution. The recommended way to install SnowSQL on Arch-based systems is to use an AUR helper (like `yay`) to install the AUR package.
+1. **Data Ingestion:**  
+   The ingestion script fetches data from Coinbase, converts it into a CSV file, and loads it into the `CURRENCIES` table in Snowflake.
 
-### Steps to Install SnowSQL on Garuda Linux
+2. **Django REST API:**  
+   The Django API connects to Snowflake and provides endpoints:
+   - **Login Endpoint:** (`/api/login/`) Allows users to log in and obtain a session.
+   - **Level 1 Endpoint:** Publicly available.
+   - **Level 2 Endpoint:** Accessible only to logged-in (authenticated) users.
+   - **Level 3 Endpoint:** Accessible only to admin users.
+
+3. **Streamlit Visualization:**  
+   Separate Streamlit applications are used to visualize data for each authorization level:
+   - **Level 1 Visualization:** Public data (no login required).
+   - **Level 2 Visualization:** Requires user login.
+   - **Level 3 Visualization:** Requires admin login.
+
+---
+
+## Notes
+
+- **Environment Security:**  
+  Ensure your `.env` file is excluded from version control by listing it in `.gitignore`.
+
+- **Authentication:**  
+  The project includes a custom login API endpoint that facilitates session-based authentication, which is used by the Streamlit apps to access protected API endpoints.
+
+- **Customization:**  
+  You can customize the API views and data filtering logic in Django as needed.
+
+---
 
 
-
-## Summary
-
-1. **Data Flow:**  
-   - Data is ingested from Coinbase, converted to CSV, and loaded into Snowflake.
-   - Django REST API queries Snowflake and serves data via endpoints protected at three levels.
-   - Custom login API enables session-based authentication.
-   - Separate Streamlit apps visualize data at each authorization level.
-
+```
