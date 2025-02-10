@@ -201,11 +201,3 @@ Open separate terminal windows or tabs and run the following commands:
 - **Customization:**  
   You can modify the API views, data filtering logic, and visualization code to suit your project needs.
 
----
-
-Happy coding!
-```
-
----
-
-Simply save the content above as your `README.md` file in the project root. This README provides a complete overview of your project, the structure, data flow, installation, setup, usage instructions, and notes regarding security and customization.
