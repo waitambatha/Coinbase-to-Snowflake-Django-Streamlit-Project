@@ -79,8 +79,8 @@ flowchart TD
 Clone the repository and navigate into the project folder:
 
 ```bash
-git clone https://github.com/yourusername/coinbaseapi.git
-cd coinbaseapi
+git@github.com:waitambatha/Coinbase-to-Snowflake-Django-Streamlit-Project.git
+cd Coinbase-to-Snowflake-Django-Streamlit-Project
 ```
 
 Install the required Python packages:
